@@ -1,0 +1,17 @@
+{
+  "name": "event-manager",
+  "version": "1.0.0",
+  "description": "Event Manager Full Stack Application",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build && cd .. && node -e \"const fs=require('fs');const path=require('path');function copyDir(src,dest){if(!fs.existsSync(dest))fs.mkdirSync(dest,{recursive:true});const entries=fs.readdirSync(src,{withFileTypes:true});for(let entry of entries){const srcPath=path.join(src,entry.name);const destPath=path.join(dest,entry.name);if(entry.isDirectory()){copyDir(srcPath,destPath);}else{fs.copyFileSync(srcPath,destPath);}}}copyDir('frontend/build','backend/build');\"",
+    "build:unix": "cd frontend && npm install && npm run build && cd .. && cp -r frontend/build backend/build",
+    "build:windows": "cd frontend && npm install && npm run build && cd .. && xcopy /E /I /Y frontend\\build backend\\build",
+    "install": "cd backend && npm install && cd ../frontend && npm install",
+    "start": "cd backend && npm start",
+    "dev": "cd backend && npm run dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
+
