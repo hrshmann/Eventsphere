@@ -19,14 +19,23 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/notes', require('./routes/notes'));
 
-// Serve frontend build (only in production)
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'build')));
-  
-  // All unmatched routes go to React frontend
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
-  });
+// Serve frontend build (check both build and public folders for Vercel compatibility)
+const buildPath = path.join(__dirname, 'build');
+const publicPath = path.join(__dirname, 'public');
+
+if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+  // Try build folder first, then public folder
+  if (require('fs').existsSync(buildPath)) {
+    app.use(express.static(buildPath));
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(buildPath, 'index.html'));
+    });
+  } else if (require('fs').existsSync(publicPath)) {
+    app.use(express.static(publicPath));
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(publicPath, 'index.html'));
+    });
+  }
 }
 
 // Start server (only if not in Vercel serverless environment)
