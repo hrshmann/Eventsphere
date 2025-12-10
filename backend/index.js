@@ -19,6 +19,20 @@ const port = process.env.PORT || 5000; // Use environment port if deployed
 app.use(cors());
 app.use(express.json());
 
+// Health check endpoint (for debugging)
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    env: {
+      hasMongoURI: !!process.env.MONGODB_URI,
+      hasJWTSecret: !!process.env.JWT_SECRET,
+      nodeEnv: process.env.NODE_ENV,
+      vercel: process.env.VERCEL
+    }
+  });
+});
+
 // Middleware to ensure MongoDB connection before API routes
 app.use('/api/*', async (req, res, next) => {
   try {
