@@ -1,12 +1,16 @@
 // Import required modules
 require('dotenv').config();
-const connectToMongo = require('./db');
+const { connectToMongo, ensureConnection } = require('./db');
 const express = require('express');
 const cors = require('cors');
 const path = require('path'); // for serving frontend build
+const fs = require('fs');
 
-// Connect to MongoDB
-connectToMongo();
+// Connect to MongoDB (non-blocking for serverless)
+// In serverless, connection happens on first request
+if (process.env.VERCEL !== '1') {
+  connectToMongo();
+}
 
 const app = express();
 const port = process.env.PORT || 5000; // Use environment port if deployed
@@ -14,6 +18,12 @@ const port = process.env.PORT || 5000; // Use environment port if deployed
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+// Middleware to ensure MongoDB connection before API routes
+app.use('/api/*', async (req, res, next) => {
+  await ensureConnection();
+  next();
+});
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -25,15 +35,20 @@ const publicPath = path.join(__dirname, 'public');
 
 if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
   // Try build folder first, then public folder
-  if (require('fs').existsSync(buildPath)) {
+  if (fs.existsSync(buildPath)) {
     app.use(express.static(buildPath));
     app.get('*', (req, res) => {
       res.sendFile(path.join(buildPath, 'index.html'));
     });
-  } else if (require('fs').existsSync(publicPath)) {
+  } else if (fs.existsSync(publicPath)) {
     app.use(express.static(publicPath));
     app.get('*', (req, res) => {
       res.sendFile(path.join(publicPath, 'index.html'));
+    });
+  } else {
+    // If no build folder exists, return a simple message
+    app.get('*', (req, res) => {
+      res.status(404).send('Frontend build not found. Please run npm run build first.');
     });
   }
 }
