@@ -21,13 +21,43 @@ app.use(express.json());
 
 // Middleware to ensure MongoDB connection before API routes
 app.use('/api/*', async (req, res, next) => {
-  await ensureConnection();
-  next();
+  try {
+    await ensureConnection();
+    next();
+  } catch (error) {
+    console.error('Database connection error:', error.message);
+    res.status(503).json({ 
+      success: false, 
+      error: 'Database connection failed. Please try again later.' 
+    });
+  }
 });
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/notes', require('./routes/notes'));
+
+// Global error handler for unhandled errors
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(err.status || 500).json({
+    success: false,
+    error: process.env.NODE_ENV === 'production' 
+      ? 'Internal server error' 
+      : err.message
+  });
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
 
 // Serve frontend build (check both build and public folders for Vercel compatibility)
 const buildPath = path.join(__dirname, 'build');
@@ -61,4 +91,11 @@ if (process.env.VERCEL !== '1') {
 }
 
 // Export for Vercel serverless
+// Vercel expects a handler function, but Express app export also works
+// Using app export is fine for Express apps with vercel.json routing
 module.exports = app;
+
+// Alternative: If you need a handler function, use this instead:
+// module.exports = (req, res) => {
+//   return app(req, res);
+// };
