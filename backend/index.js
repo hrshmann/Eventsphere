@@ -33,8 +33,13 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Middleware to ensure MongoDB connection before API routes
+// Middleware to ensure MongoDB connection before API routes (except health check)
 app.use('/api/*', async (req, res, next) => {
+  // Skip MongoDB connection for health check endpoint
+  if (req.path === '/api/health') {
+    return next();
+  }
+  
   try {
     await ensureConnection();
     next();
