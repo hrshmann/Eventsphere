@@ -33,7 +33,7 @@ const Footer = () => {
       <p>Contact: 18001372227 | info@ctgroup.in</p>
 
       {/* Copyright */}
-      <p>© {new Date().getFullYear()} All Rights Reserved | Developed by <strong>Amit Sharma</strong> , <strong>Nisha</strong> & <strong>Harsh deep</strong></p>
+      <p>© {new Date().getFullYear()} All Rights Reserved | Developed by <strong>Hazik Muzafar</strong></p>
     </footer>
   );
 };
