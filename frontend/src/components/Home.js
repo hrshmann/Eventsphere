@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import techFestImg from '../assets/slide1.jpg';
@@ -52,7 +53,7 @@ const Home = ({ showAlert }) => {
       setCurrentWordIndex(prev => (prev + 1) % words.length);
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [words]);
 
   const categories = ['Cultural', 'Tech', 'Sports', 'Art', 'Workshop', 'On-Stage'];
   const galleryPreview = [gallery1, gallery2, gallery3, gallery4];
